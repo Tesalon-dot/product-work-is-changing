@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Product work is changing</title>
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: landing page → one story in four chapters → the same story without and with AI, side by side → how the site was made, with a real decision log. Yellow is the prototype/marker colour and appears only where something is live or decided. */
+:root {
+  --bg: #EEF1EC;
+  --paper: #F8F9F5;
+  --ink: #17211C;
+  --muted: #56635A;
+  --line: #CBD3CC;
+  --accent: #E6B70A;
+  --live: #1F6F5C;
+  --live-soft: #D9EBE4;
+  --warn: #A4471F;
+  --on-accent: #17211C;
+  --mark-size: 34%; --mark-pos: 88%; --hit-stop: 62%;
+  --display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Literata", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111613; --paper: #19201C; --ink: #E6EBE5; --muted: #9AA79E; --line: #2F3933;
+    --accent: #F0C53A; --live: #62C3A6; --live-soft: #1D332B; --warn: #E58A61; --on-accent: #17211C; --mark-size: 12%; --mark-pos: 100%; --hit-stop: 90%; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111613; --paper: #19201C; --ink: #E6EBE5; --muted: #9AA79E; --line: #2F3933;
+  --accent: #F0C53A; --live: #62C3A6; --live-soft: #1D332B; --warn: #E58A61; --on-accent: #17211C; --mark-size: 12%; --mark-pos: 100%; --hit-stop: 90%; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--body); font-size: 17px; line-height: 1.6;
+  padding-inline: 20px; padding-block: 0 64px;
+}
+.wrap { max-width: 1080px; margin-inline: auto; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.05; margin: 0; }
+p { margin: 0; }
+.label {
+  font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--live); outline-offset: 2px; }
+
+/* Hero */
+.hero { padding-block: 72px 56px; display: grid; gap: 28px; }
+.hero h1 {
+  font-size: clamp(48px, 10vw, 112px); font-weight: 800; letter-spacing: -.035em; max-width: 11ch;
+}
+.mark {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat; background-position: 0 var(--mark-pos); background-size: 100% var(--mark-size);
+  animation: sweep 1.1s .35s cubic-bezier(.6,0,.2,1) both;
+}
+@keyframes sweep { from { background-size: 0% var(--mark-size); } to { background-size: 100% var(--mark-size); } }
+@media (prefers-reduced-motion: reduce) { .mark { animation: none; } }
+.hero .sub { font-family: var(--display); font-size: clamp(22px, 3.2vw, 32px); font-weight: 400; max-width: 26ch; line-height: 1.2; }
+.hero .intro { max-width: 60ch; color: var(--muted); }
+
+/* Shift */
+.shift { border-top: 1px solid var(--line); padding-block: 40px; display: grid; gap: 24px; grid-template-columns: 1fr; }
+.shift p { max-width: 62ch; }
+@media (min-width: 860px) { .shift { grid-template-columns: 220px 1fr; } }
+
+/* Stories */
+.story { border-top: 1px solid var(--line); padding-block: 48px; display: grid; gap: 36px; }
+.story-head { display: grid; gap: 10px; }
+.story-head h2 { font-size: clamp(30px, 5vw, 48px); font-weight: 600; letter-spacing: -.02em; }
+.fiction { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+.tag {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; color: var(--muted);
+}
+.story-body { display: grid; gap: 36px; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 860px) { .story-body { grid-template-columns: minmax(0, 1fr) minmax(0, 420px); } }
+.steps { display: grid; gap: 22px; min-width: 0; }
+.step { display: grid; gap: 4px; max-width: 58ch; }
+.step.call { border-left: 4px solid var(--accent); padding-left: 14px; }
+.step.call p { font-weight: 600; }
+.cut { color: var(--muted); }
+.cut s { text-decoration-color: var(--warn); text-decoration-thickness: 2px; }
+
+/* Strategy cards */
+.strat { border: 1px solid var(--line); border-radius: 10px; background: var(--paper); font-family: var(--display); font-size: 14px; line-height: 1.35; overflow: hidden; margin-top: 6px; }
+.strat-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.strat-head .label { font-size: 10px; }
+.pvb { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pvb > div { padding: 10px 12px; border-bottom: 1px solid var(--line); display: grid; gap: 2px; min-width: 0; }
+.pvb > div:nth-child(even) { border-right: 1px solid var(--line); }
+.pvb .wide { grid-column: 1 / -1; }
+.pvb > div:nth-last-child(-n+2) { border-bottom: 0; }
+.pvb .k, .okr .k { font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.okr { display: grid; }
+.okr > div:not(.strat-head) { padding: 10px 12px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: baseline; }
+.okr > div:not(.strat-head):last-child { border-bottom: 0; }
+.strat.okr > div.obj { grid-template-columns: 1fr; font-weight: 600; font-size: 15px; }
+.okr .num { font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.okr .lvl { grid-column: 1 / -1; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; }
+.okr .lvl.lead { color: var(--live); }
+.okr .lvl.lag { color: var(--muted); }
+.strat-link { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); padding: 8px 0 2px 12px; }
+.okr .hit { background: linear-gradient(transparent var(--hit-stop), var(--accent) var(--hit-stop)); }
+
+/* Prototype frames */
+.proto-wrap { display: grid; gap: 10px; justify-items: center; min-width: 0; }
+.proto-note { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; }
+.screen {
+  width: 100%; background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+  font-family: var(--display); font-size: 15px; line-height: 1.4; overflow: hidden;
+  box-shadow: 0 1px 0 var(--line), 0 18px 40px -24px rgba(0,0,0,.35);
+}
+.phone { max-width: 320px; border-radius: 30px; border-width: 8px; border-color: var(--ink); }
+.bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
+.bar .label { font-size: 10px; }
+.pad { padding: 16px; display: grid; gap: 14px; }
+
+.pill { font-family: var(--mono); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--live-soft); color: var(--live); }
+
+/* Invoicing prototype */
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+.tabs button { flex: 1; background: transparent; border: 0; padding: 10px; font-size: 13px; font-weight: 600; color: var(--muted); border-bottom: 3px solid transparent; }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.rows { display: grid; }
+.row {
+  display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 16px; border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; text-align: left; width: 100%;
+}
+.row[aria-pressed="true"] { background: var(--live-soft); }
+.row .meta { font-size: 13px; color: var(--muted); grid-column: 1 / -1; }
+.row .amt { font-variant-numeric: tabular-nums; }
+.switch { width: 38px; height: 22px; border-radius: 11px; background: var(--live); position: relative; flex: none; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 19px; width: 16px; height: 16px; border-radius: 50%; background: var(--paper); }
+.bubble { background: var(--bg); border-radius: 12px; padding: 12px; font-size: 14px; }
+.cta-btn { background: var(--ink); color: var(--paper); border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 600; font-size: 14px; }
+.hint { font-size: 13px; color: var(--muted); }
+
+/* Reveal */
+.reveal { border-top: 1px solid var(--line); padding-block: 64px 40px; display: grid; gap: 24px; }
+.reveal h2 { font-size: clamp(36px, 7vw, 72px); font-weight: 800; letter-spacing: -.03em; max-width: 14ch; }
+.reveal p { max-width: 60ch; font-size: 19px; }
+
+/* Log */
+.log { display: grid; gap: 0; border-top: 2px solid var(--ink); }
+.entry { display: grid; grid-template-columns: 1fr; gap: 4px 24px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+@media (min-width: 700px) { .entry { grid-template-columns: 120px minmax(0, 1fr); } }
+.entry .d { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.entry strong { font-family: var(--display); font-size: 19px; font-weight: 600; display: block; }
+.entry .why { color: var(--muted); font-size: 15px; }
+.log-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; padding-bottom: 12px; }
+.log-head h3 { font-size: 24px; font-weight: 600; }
+
+
+/* Navigation: home → story (4 chapters) → reveal */
+.view { animation: fadein .35s ease both; }
+@keyframes fadein { from { opacity: .4; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .view { animation: none; } }
+.choose { border-top: 1px solid var(--line); padding-block: 40px 24px; display: grid; gap: 18px; }
+.cards { display: grid; gap: 14px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .cards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.card {
+  display: grid; gap: 10px; align-content: start; text-align: left; background: var(--paper);
+  border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0;
+  transition: transform .2s ease, border-color .2s ease;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--ink); }
+.card-title { font-family: var(--display); font-size: 24px; font-weight: 600; line-height: 1.1; text-wrap: balance; }
+.card-hook { color: var(--muted); font-size: 15px; line-height: 1.5; }
+.card-foot { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-family: var(--mono); font-size: 11px; color: var(--muted); padding-top: 8px; border-top: 1px dashed var(--line); }
+.card-foot .seen { color: var(--live); font-weight: 600; }
+.card-site { background: transparent; border-style: dashed; }
+.back { background: transparent; border: 0; padding: 0; font-family: var(--mono); font-size: 13px; color: var(--muted); justify-self: start; }
+.back:hover { color: var(--ink); }
+.story { border-top: 0; padding-block: 32px 0; }
+.chapters { display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.chap {
+  display: inline-flex; align-items: center; gap: 8px; background: transparent; border: 1px solid var(--line);
+  border-radius: 999px; padding: 6px 14px 6px 6px; font-family: var(--display); font-size: 14px; color: var(--muted);
+}
+.chap .n { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--bg); font-family: var(--mono); font-size: 12px; }
+.chap.visited { color: var(--ink); }
+.chap.visited .n { background: var(--live-soft); color: var(--live); }
+.chap[aria-current="step"] { border-color: var(--ink); color: var(--ink); }
+.chap[aria-current="step"] .n { background: var(--accent); color: var(--on-accent); }
+.chapter { min-height: 240px; }
+.ch-grid { display: grid; gap: 28px; max-width: 62ch; }
+.ch-grid.two { max-width: none; align-items: start; }
+@media (min-width: 860px) { .ch-grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 440px); } }
+.chapter .step p { font-size: 19px; }
+.chapter .step.call p { font-size: 20px; }
+.pager { display: flex; justify-content: space-between; gap: 12px; padding-top: 24px; border-top: 1px solid var(--line); }
+.pg.prev { background: transparent; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-family: var(--display); font-size: 14px; }
+.pg[disabled] { visibility: hidden; }
+.after { display: grid; gap: 12px; padding: 20px; border-radius: 14px; background: var(--paper); border: 1px solid var(--line); }
+.after-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.after-links button { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-family: var(--display); font-size: 14px; }
+.after-links button:hover { border-color: var(--ink); }
+.reveal { border-top: 0; padding-block: 24px 40px; }
+
+
+/* Terms */
+.term {
+  background: none; border: 0; padding: 0; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit;
+  text-decoration: underline dotted; text-decoration-thickness: 1.5px; text-underline-offset: 3px; text-decoration-color: var(--live); cursor: help;
+}
+.term:hover { color: var(--live); }
+.sheet {
+  position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 10;
+  max-width: 420px; margin-inline: auto; background: var(--paper); color: var(--ink); border: 1px solid var(--ink); border-radius: 14px;
+  padding: 16px 18px; display: grid; gap: 8px; box-shadow: 0 20px 50px -20px rgba(0,0,0,.5); font-size: 15px; line-height: 1.5;
+}
+@media (min-width: 760px) { .sheet { left: auto; right: 24px; margin: 0; } }
+.sheet-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.sheet h3 { font-size: 20px; font-weight: 600; }
+.sheet-x { background: none; border: 0; font-size: 22px; line-height: 1; color: var(--muted); padding: 0 2px; }
+.sheet-all { justify-self: start; background: none; border: 0; padding: 0; font-family: var(--mono); font-size: 12px; color: var(--live); }
+.terms-intro { max-width: 60ch; color: var(--muted); }
+.gloss { display: grid; gap: 36px; padding-block: 24px 40px; }
+.gloss-group { display: grid; gap: 0; }
+.gloss-group > .label { padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+.gloss dl { margin: 0; display: grid; }
+.gloss .item { display: grid; grid-template-columns: 1fr; gap: 4px 24px; padding-block: 14px; border-bottom: 1px solid var(--line); }
+@media (min-width: 700px) { .gloss .item { grid-template-columns: 220px minmax(0, 1fr); } }
+.gloss dt { font-family: var(--display); font-size: 18px; font-weight: 600; }
+.gloss dd { margin: 0; max-width: 62ch; }
+.gloss dd ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+.terms-link { justify-self: start; background: none; border: 0; padding: 0; font-family: var(--mono); font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.terms-link:hover { color: var(--ink); }
+
+
+/* Before / after flow */
+.flow-head { display: grid; gap: 14px; padding-block: 24px 28px; }
+.flow-head h2 { font-size: clamp(32px, 6vw, 60px); font-weight: 800; letter-spacing: -.03em; max-width: 18ch; }
+.flow-head p { max-width: 62ch; font-size: 18px; }
+.flow-time { display: grid; gap: 10px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); }
+.tl-rows { display: grid; gap: 12px; }
+.tl-row { display: grid; gap: 4px; }
+.tl-row .who { font-family: var(--display); font-weight: 600; font-size: 15px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.tl-row .who span:last-child { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--muted); }
+.tl-bar { position: relative; height: 22px; border-radius: 5px; background: var(--bg); border: 1px solid var(--line); overflow: hidden; }
+.seg-b { position: absolute; top: 0; bottom: 0; border-right: 2px solid var(--paper); }
+.seg-b.other { background: var(--line); }
+.seg-b.build { background: var(--live); opacity: .85; }
+.learn-mark { position: absolute; top: -1px; bottom: -1px; width: 4px; margin-left: -2px; background: var(--accent); }
+.tl-scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tl-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.lg { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+.lg.build { background: var(--live); } .lg.other { background: var(--line); } .lg.learn { background: var(--accent); }
+.flow-cols { display: none; }
+@media (min-width: 760px) {
+  .flow-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2;
+    background: var(--bg); padding-block: 14px 10px; margin-top: 28px; border-bottom: 2px solid var(--ink); font-family: var(--display); font-weight: 800; font-size: 22px; }
+}
+.flow { list-style: none; margin: 0; padding: 0; display: grid; }
+.stage { display: grid; gap: 12px; padding-block: 22px; border-bottom: 1px solid var(--line); }
+.stage-name { display: flex; align-items: baseline; gap: 10px; }
+.stage-name .n { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.stage-name h3 { font-size: 20px; font-weight: 600; }
+.pair { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 760px) { .pair { grid-template-columns: 1fr 1fr; gap: 16px; } }
+.cell { display: grid; gap: 10px; align-content: start; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--paper); min-width: 0; }
+.cell.after { border-color: var(--live); }
+.cell .side { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+@media (min-width: 760px) { .cell .side { display: none; } }
+.cell p { font-size: 16px; }
+.cell-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; justify-content: space-between; border-top: 1px dashed var(--line); padding-top: 10px; }
+.people { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-family: var(--mono); font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--bg); color: var(--ink); }
+.ai { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--muted); white-space: nowrap; }
+.ai i { width: 10px; height: 10px; border-radius: 2px; border: 1px solid var(--live); display: inline-block; }
+.ai i.on { background: var(--live); }
+.took { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.people-note { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 10px 14px; border-left: 4px solid var(--line); }
+.people-note.changed { border-left-color: var(--accent); }
+.people-note .pill { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.people-note.changed .pill { border-color: var(--accent); color: var(--ink); }
+.people-note p { font-size: 15px; max-width: 70ch; }
+.flow-sum { display: grid; gap: 24px; grid-template-columns: 1fr; padding-block: 36px 8px; }
+@media (min-width: 760px) { .flow-sum { grid-template-columns: 1fr 1fr; } .flow-close, .after-flow { grid-column: 1 / -1; } }
+.flow-sum ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+.flow-close { font-family: var(--display); font-size: 22px; line-height: 1.3; max-width: 40ch; border-left: 4px solid var(--accent); padding-left: 14px; }
+.card-flow { border-style: solid; border-color: var(--live); }
+
+/* Close */
+.close { padding-block: 56px 0; display: grid; gap: 14px; }
+.close h2 { font-size: clamp(30px, 5vw, 48px); font-weight: 600; letter-spacing: -.02em; max-width: 18ch; }
+.close p { max-width: 56ch; color: var(--muted); }
+footer { padding-top: 48px; }
+</style>
+
+<div class="wrap">
+
+  <div class="view" id="v-home">
+  <header class="hero">
+    <span class="label">A small site about a big change</span>
+    <h1>Product work is <span class="mark">changing</span></h1>
+    <p class="sub">AI can build a first version in an afternoon. So you can find out if it works before you commit.</p>
+    <p class="intro">That changes where a Product Owner spends their time. Below is what shifts, and one fictional scaleup story that shows it: first in four short chapters with a prototype you can try, then told twice, without AI and with AI.</p>
+  </header>
+
+  <section class="shift" aria-label="The shift">
+    <span class="label">The shift</span>
+    <div style="display:grid;gap:16px">
+      <p>For years, a product idea had to be described before anyone could react to it. Someone wrote the <button type="button" class="term" data-term="spec">spec</button> and the <button type="button" class="term" data-term="stories">user stories</button>, the team built it, and only then did users try it. Finding out it was the wrong idea could take months.</p>
+      <p>Now the first version comes before the commitment. That moves the <button type="button" class="term" data-term="po">Product Owner</button>'s time to the start: which problem is worth solving, what to put in front of users, and what to cut once they've tried it.</p>
+      <p>Testing more ideas also means saying no more often. A clear <button type="button" class="term" data-term="strategy">strategy</button> makes that possible. The story below starts with one, a <button type="button" class="term" data-term="pvb">Product Vision Board</button> and a team <button type="button" class="term" data-term="okr">OKR</button>, and the decision at the end goes back to it.</p>
+    </div>
+  </section>
+  <section class="choose" aria-label="Where to start">
+    <span class="label">Where to start</span>
+    <div class="cards">
+      <button type="button" class="card" data-view="invoices" id="card-invoices">
+        <span class="label">1 · The story · Scaleup</span>
+        <span class="card-title">The feature the prototype talked us out of</span>
+        <span class="card-hook">Two prototypes in one afternoon, and three sprints of work that never got built.</span>
+        <span class="card-foot"><span>4 chapters · Two versions of an invoicing app</span><span class="seen" hidden>Read ✓</span></span>
+      </button>
+      <button type="button" class="card card-flow" data-view="flow" id="card-flow">
+        <span class="label">2 · Told twice · Without AI and with AI</span>
+        <span class="card-title">Same team, same problem, two ways of working</span>
+        <span class="card-hook">Follow the work side by side. See where AI took on part of the load, and what stayed between people.</span>
+        <span class="card-foot"><span>8 stages, side by side</span><span class="seen" hidden>Read ✓</span></span>
+      </button>
+      <button type="button" class="card card-site" data-view="fourth" id="card-fourth">
+        <span class="label">3 · The other prototype</span>
+        <span class="card-title">How this site was made</span>
+        <span class="card-hook">The story is fictional. The decisions behind this site are real. Here they are.</span>
+        <span class="card-foot"><span>Decision log</span><span class="seen" hidden>Read ✓</span></span>
+      </button>
+    </div>
+    <button type="button" class="terms-link" data-view="terms">Not from IT? Here's a short explainer of the terms →</button>
+  </section>
+  </div>
+
+  <div class="view" id="v-terms" hidden>
+    <button type="button" class="back" data-view="home">← Start</button>
+    <section class="reveal">
+      <span class="label">Explainer</span>
+      <h2>The words on this site</h2>
+      <p class="terms-intro">If you work in product or software development, you probably know most of these already. They're here for everyone else, in short form. Tap a dotted word anywhere on the site to see its explanation.</p>
+    </section>
+    <div class="gloss" id="gloss"></div>
+  </div>
+  <article class="view story" id="v-invoices" data-story="invoices" hidden>
+    <button type="button" class="back" data-view="home">← Start</button>
+    <div class="story-head">
+      <span class="label">The story · Scaleup · Invoicing for freelancers</span>
+      <h2>The feature the prototype talked us out of</h2>
+      <div class="fiction"><span class="tag">Fictional company</span><span class="tag">Illustrative figures</span></div>
+    </div>
+    <nav class="chapters" aria-label="Chapters"><button type="button" class="chap" data-go="0" id="invoices-c0"><span class="n">1</span>The organisation</button><button type="button" class="chap" data-go="1" id="invoices-c1"><span class="n">2</span>The user</button><button type="button" class="chap" data-go="2" id="invoices-c2"><span class="n">3</span>The prototype</button><button type="button" class="chap" data-go="3" id="invoices-c3"><span class="n">4</span>The call</button></nav>
+    <section class="chapter" data-n="0" aria-label="The organisation">
+      <div class="ch-grid two">
+        <div class="step"><span class="label">The company</span><p>Kvitto, an invoicing app for freelancers. It grew from 30 to 120 people in two years.</p></div>
+        <div class="step"><span class="label">The <button type="button" class="term" data-term="strategy">strategy</button></span>
+          <div class="strat" role="group" aria-label="Product Vision Board">
+            <div class="strat-head"><span class="label"><button type="button" class="term" data-term="pvb">Product Vision Board</button></span><span class="label">Kvitto</span></div>
+            <div class="pvb">
+              <div class="wide"><span class="k">Vision</span>Freelancers spend their time on their craft, not on admin.</div>
+              <div><span class="k">Target group</span>Freelancers who work alone, like photographers and designers</div>
+              <div><span class="k">Needs</span>Get paid on time without straining the client relationship</div>
+              <div><span class="k">Product</span>Simple invoicing that shows what happens to each invoice</div>
+              <div><span class="k">Business goals</span>Keep freelancers subscribed past their first year</div>
+            </div>
+          </div>
+          <span class="strat-link" aria-hidden="true">↓ This quarter, the team focuses on getting paid</span>
+          <div class="strat okr" role="group" aria-label="Quarterly OKR">
+            <div class="strat-head"><span class="label">Team <button type="button" class="term" data-term="okr">OKR</button> · this quarter</span><span class="label">Getting paid</span></div>
+            <div class="obj"><span class="k"><button type="button" class="term" data-term="objective">Objective</button></span>Freelancers get paid on time without the awkward chase.</div>
+            <div><span>Days from due date to payment</span><span class="num">14 → 7</span><span class="lvl lag"><button type="button" class="term" data-term="lagging">Lagging</button> · shows the result late</span></div>
+            <div><span class="hit">Overdue invoices the freelancer acts on within 3 days</span><span class="num">20% → 50%</span><span class="lvl lead"><button type="button" class="term" data-term="leading">Leading</button> · moves first</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="chapter" data-n="1" hidden aria-label="The user">
+      <div class="ch-grid">
+        <div class="step"><span class="label">The user</span><p>Amir is a freelance photographer. He hates chasing late payments, so he puts it off, and the money comes in later.</p></div>
+        <div class="step"><span class="label">The problem</span><p>Chasing a client feels awkward, so freelancers wait. The team's first idea was automatic reminders that get firmer over time.</p></div>
+      </div>
+    </section>
+    <section class="chapter" data-n="2" hidden aria-label="The prototype">
+      <div class="story-body">
+      <div class="steps">
+        <div class="step"><span class="label">The <button type="button" class="term" data-term="prototype">prototype</button></span><p>Two versions in one afternoon. Version A sends the reminders for you. Version B shows whether the client has opened the invoice. Switch between them.</p></div>
+      </div>
+      <div class="proto-wrap">
+        <div class="screen phone" role="group" aria-label="Invoicing prototype">
+          <div class="tabs" role="tablist">
+            <button role="tab" id="tabA" aria-selected="false" aria-controls="panelA">Version A</button>
+            <button role="tab" id="tabB" aria-selected="true" aria-controls="panelB">Version B</button>
+          </div>
+          <div id="panelA" role="tabpanel" aria-labelledby="tabA" hidden></div>
+          <div id="panelB" role="tabpanel" aria-labelledby="tabB"></div>
+        </div>
+        <span class="proto-note">Prototype · switch versions, tap an invoice</span>
+      </div>
+      </div>
+    </section>
+    <section class="chapter" data-n="3" hidden aria-label="The call">
+      <div class="ch-grid">
+        <div class="step"><span class="label">The conversation</span><p>In five test sessions, four people switched the reminders off again. They didn't want software being firm with their best client. Version B got a different reaction: knowing the invoice had been opened told them whether to wait or send a short note.</p>
+          <p class="cut">Cut: <s>the escalating reminder sequence</s>, an estimated three <button type="button" class="term" data-term="sprint">sprints</button> of work.</p></div>
+        <div class="step call"><span class="label">The call</span><p>Build the "opened" status first. It moves the leading <button type="button" class="term" data-term="kr">key result</button> directly: people act sooner when they know the client has seen the invoice. Look at reminders again next quarter.</p></div>
+      
+      </div>
+    </section>
+    <div class="pager">
+      <button type="button" class="pg prev">← Previous</button>
+      <button type="button" class="pg next cta-btn">Next chapter →</button>
+    </div>
+    <div class="after" hidden>
+      <span class="label">End of the story</span>
+      <p>Now see the same work done twice, without AI and with AI. Or see how this site was made.</p>
+      <div class="after-links"></div>
+    </div>
+  </article>
+  <div class="view" id="v-fourth" hidden>
+    <button type="button" class="back" data-view="home">← Start</button>
+    <section class="reveal">
+    <span class="label">The turn</span>
+    <h2>This site is a prototype too</h2>
+    <p>I'm a <button type="button" class="term" data-term="sm">Scrum Master</button> moving into product ownership. My current job doesn't let me use AI tools, so I built this on my own time, with AI doing most of the building.</p>
+    <p>The company and users in the story are fictional. The decisions behind this site are real, and they were mine. Here they are.</p>
+
+    <div>
+      <div class="log-head">
+        <h3><button type="button" class="term" data-term="log">Decision log</button></h3>
+        <span class="label">Version 1</span>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+  </section>
+  <section class="close">
+    <span class="label">Next</span>
+    <h2>Curious what this would look like on your team?</h2>
+    <p>This site doesn't carry my name yet. Reply to whoever sent you the link, and let's talk.</p>
+  </section>
+  </div>
+
+  <div class="view" id="v-flow" hidden>
+    <button type="button" class="back" data-view="home">← Start</button>
+    <section class="flow-head">
+      <span class="label">The same story, told twice · Kvitto · Scaleup</span>
+      <h2>Same team, same problem, two ways of working</h2>
+      <p>Freelancers wait too long to get paid. The team's first idea is automatic reminders that get firmer over time. Here is the same piece of work, done twice: once without AI, and once with AI in the flow.</p>
+      <div class="fiction"><span class="tag">Fictional company</span><span class="tag">Illustrative figures</span></div>
+    </section>
+
+    <section class="flow-time" aria-label="Timeline">
+      <span class="label">Weeks from first signal to a shipped answer</span>
+      <div class="tl-rows" id="flowTime"></div>
+      <div class="tl-scale" aria-hidden="true"><span>0</span><span>4</span><span>8</span><span>12</span><span>16 weeks</span></div>
+      <div class="tl-legend"><span><i class="lg build"></i>Building</span><span><i class="lg other"></i>Everything before building</span><span><i class="lg learn"></i>The team learns reminders are the wrong bet</span></div>
+    </section>
+
+    <div class="flow-cols" aria-hidden="true"><span>Without AI</span><span>With AI</span></div>
+    <ol class="flow" id="flow"></ol>
+
+    <section class="flow-sum">
+      <div><span class="label">What AI took on</span><ul>
+        <li>Sorting hundreds of support tickets into themes</li>
+        <li>Transcripts and first-draft summaries of interviews</li>
+        <li>Two clickable prototypes in an afternoon</li>
+        <li>A share of the code, under human review</li>
+      </ul></div>
+      <div><span class="label">What stayed between people</span><ul>
+        <li>Talking to users, and listening to them</li>
+        <li>Agreeing on the problem, and checking it against the OKR</li>
+        <li>Saying no to the reminders, and owning that call</li>
+        <li>Code review and the team's own discussion of trade-offs</li>
+      </ul></div>
+      <p class="flow-close">The work got faster where it was about producing things. The conversations stayed the same length. They just started earlier, around something people could click.</p>
+      <div class="after after-flow"><span class="label">Next</span><p>See how this site was made, and the decisions behind it.</p><div class="after-links"><button type="button" data-view="fourth">How this site was made</button><button type="button" data-view="invoices">Back to the story</button></div></div>
+    </section>
+  </div>
+  <div class="sheet" id="sheet" role="dialog" aria-labelledby="sheetTitle" hidden><div class="sheet-top"><h3 id="sheetTitle"></h3><button type="button" class="sheet-x" id="sheetX" aria-label="Close">×</button></div><p id="sheetText"></p><button type="button" class="sheet-all" data-view="terms">All terms →</button></div>
+  <footer><span class="label">Made with AI · decided by a human · a fictional story, real decisions</span></footer>
+</div>
+
+<script>
+/* ---------- Story 2: invoicing ---------- */
+(function () {
+  const tabA = document.getElementById("tabA"), tabB = document.getElementById("tabB");
+  const pA = document.getElementById("panelA"), pB = document.getElementById("panelB");
+  function show(a) {
+    tabA.setAttribute("aria-selected", a); tabB.setAttribute("aria-selected", !a);
+    pA.hidden = !a; pB.hidden = a;
+  }
+  tabA.addEventListener("click", () => show(true));
+  tabB.addEventListener("click", () => show(false));
+
+  const reminders = [
+    ["Day 3", "Friendly reminder", "Hi Nordlys Studio, a quick reminder that invoice #0412 was due on 2 September."],
+    ["Day 10", "Firm reminder", "Invoice #0412 is now 10 days overdue. Please pay within 5 days."],
+    ["Day 20", "Final notice", "Final notice: invoice #0412 is 20 days overdue. Further steps may follow."]
+  ];
+  let rSel = 0;
+  function renderA() {
+    pA.innerHTML = `<div class="pad" style="padding-bottom:0"><span class="label">Auto-reminders · on</span></div>
+      <div class="rows">${reminders.map((r, i) => `
+        <button type="button" class="row" id="rem-${i}" aria-pressed="${i === rSel}">
+          <span><strong>${r[1]}</strong></span><span class="switch" aria-hidden="true"></span>
+          <span class="meta">${r[0]} after due date</span>
+        </button>`).join("")}</div>
+      <div class="pad"><div class="bubble">${reminders[rSel][2]}</div>
+      <span class="hint">Sent automatically, in your name.</span></div>`;
+    pA.querySelectorAll(".row").forEach((b, i) => b.addEventListener("click", () => { rSel = i; renderA(); }));
+  }
+
+  const invoices = [
+    { client: "Nordlys Studio", amt: "8.400 kr", status: "Opened 3 times · last Tuesday", seen: true },
+    { client: "Hav & Co", amt: "3.200 kr", status: "Not opened · due 5 days ago", seen: false },
+    { client: "Bageriet Lund", amt: "12.000 kr", status: "Paid", paid: true }
+  ];
+  let iSel = 0, nudged = false;
+  function renderB() {
+    const inv = invoices[iSel];
+    let advice, btn = "";
+    if (inv.paid) advice = "Paid. Nothing to do.";
+    else if (inv.seen) { advice = "They've seen it. A short, personal note usually works now."; btn = nudged ? "Note drafted. Edit it in the real app." : "Write a short note"; }
+    else { advice = "They may have missed it. Resend the invoice first."; btn = nudged ? "Resend queued. This is a prototype." : "Resend invoice"; }
+    pB.innerHTML = `<div class="rows">${invoices.map((v, i) => `
+        <button type="button" class="row" id="inv-${i}" aria-pressed="${i === iSel}">
+          <span><strong>${v.client}</strong></span><span class="amt">${v.amt}</span>
+          <span class="meta">${v.status}</span>
+        </button>`).join("")}</div>
+      <div class="pad"><div class="bubble">${advice}</div>
+      ${btn ? `<button type="button" class="cta-btn" id="nudge">${btn}</button>` : ""}</div>`;
+    pB.querySelectorAll(".row").forEach((b, i) => b.addEventListener("click", () => { iSel = i; nudged = false; renderB(); }));
+    const n = document.getElementById("nudge");
+    if (n) n.addEventListener("click", () => { nudged = true; renderB(); });
+  }
+  renderA(); renderB(); show(false);
+})();
+
+/* ---------- Terms ---------- */
+const TERMS = {
+  strategy: ["Strategy", "The few choices that say where a product is going, who it is for and what it will not do. A clear strategy is what makes it possible to say no.", "Strategy"],
+  pvb: ["Product Vision Board", "A one-page product strategy, created by Roman Pichler. The vision sits on top, with four boxes below it.", "Strategy",
+    ["Vision: the change the product should make, in one sentence", "Target group: who it is for", "Needs: the problem it solves for them", "Product: what it is and what makes it stand out", "Business goals: what the organisation gets out of it"]],
+  okr: ["OKR", "Objectives and Key Results. A goal-setting method from Intel, later made widely known by Google. One objective, measured by two to four key results, usually for a quarter.", "Strategy"],
+  objective: ["Objective", "What you want to achieve, in plain words. It should be clear enough that everyone can tell what matters this quarter.", "Strategy"],
+  kr: ["Key result", "A number that shows whether you reached the objective, written as from → to. It measures an outcome, so \"launch feature X\" is not a key result.", "Strategy"],
+  lagging: ["Lagging indicator", "A measure that shows the result after it has happened, like days to payment. Good for knowing whether you succeeded, too slow to steer by.", "Strategy"],
+  leading: ["Leading indicator", "A measure that moves early and predicts a lagging one. Team key results work best as leading indicators, because the team can see them move within the quarter.", "Strategy"],
+  po: ["Product Owner", "The person accountable for what a team builds and in which order. The Product Owner defines the problem and decides whether and when to solve it. The team decides how.", "Roles and ways of working"],
+  sm: ["Scrum Master", "Helps a Scrum team work well together. Facilitates meetings and workshops, removes blockers and improves how the team works.", "Roles and ways of working"],
+  sprint: ["Sprint", "A fixed period, often two weeks, in which a Scrum team builds a usable piece of the product.", "Roles and ways of working"],
+  stories: ["User stories", "Short descriptions of a need, told from the user's side: As a [user], I want [something], so that [benefit].", "Roles and ways of working"],
+  spec: ["Spec", "Short for specification. A written description of what to build, made before anything is built.", "Roles and ways of working"],
+  prototype: ["Prototype", "An early, clickable version made to learn from. It is cheap to make and cheap to throw away, which is the point.", "Roles and ways of working"],
+  log: ["Decision log", "A dated list of decisions and the reasons behind them. It makes choices visible, so they are easy to question and revisit.", "Roles and ways of working"]
+};
+(function () {
+  const sheet = document.getElementById("sheet");
+  function open(key) {
+    const t = TERMS[key]; if (!t) return;
+    document.getElementById("sheetTitle").textContent = t[0];
+    const p = document.getElementById("sheetText");
+    p.textContent = t[1];
+    if (t[3]) { const ul = document.createElement("ul"); ul.style.cssText = "margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px"; t[3].forEach(x => { const li = document.createElement("li"); li.textContent = x; ul.appendChild(li); }); p.appendChild(ul); }
+    sheet.hidden = false;
+    document.getElementById("sheetX").focus();
+  }
+  function close() { sheet.hidden = true; }
+  document.addEventListener("click", e => {
+    const t = e.target.closest(".term");
+    if (t) { e.stopPropagation(); open(t.dataset.term); return; }
+    if (e.target.closest("#sheetX") || e.target.closest(".sheet-all") || (!e.target.closest("#sheet") && !sheet.hidden)) close();
+  }, true);
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+  const groups = {};
+  Object.values(TERMS).forEach(t => (groups[t[2]] = groups[t[2]] || []).push(t));
+  document.getElementById("gloss").innerHTML = Object.entries(groups).map(([g, items]) => `
+    <div class="gloss-group"><span class="label">${g}</span><dl>${items.map(t => `
+      <div class="item"><dt>${t[0]}</dt><dd>${t[1]}${t[3] ? `<ul>${t[3].map(x => `<li>${x}</li>`).join("")}</ul>` : ""}</dd></div>`).join("")}</dl></div>`).join("");
+})();
+
+
+/* ---------- Before / after flow ---------- */
+(function () {
+  // [title, before{t,who,ai,took}, after{t,who,ai,took}, people{changed,text}]
+  const S = [
+    ["Spotting the signal",
+     { t: "The Product Owner reads support tickets for a week and tags themes in a spreadsheet. Late payment keeps coming up.", who: ["Product Owner", "Support lead"], ai: 0, took: "1 week" },
+     { t: "AI sorts 600 tickets into themes overnight. The Product Owner reads a sample of each theme to check the sorting holds up.", who: ["Product Owner", "Support lead"], ai: 3, took: "1 day" },
+     [true, "The Product Owner and the support lead still meet. They start from themes and counts, where they used to start from the tickets each of them remembered."]],
+    ["Talking to users",
+     { t: "Five interviews with freelancers. The Product Owner and the UX designer take notes and write them up afterwards.", who: ["Product Owner", "UX designer", "Users"], ai: 0, took: "2 weeks" },
+     { t: "The same five interviews. AI transcribes and drafts a summary. The Product Owner and the UX designer correct it together.", who: ["Product Owner", "UX designer", "Users"], ai: 1, took: "1 week" },
+     [false, "The interviews are the same conversations with the same people. AI listens in. Nobody hands the talking over."]],
+    ["Framing the problem",
+     { t: "Chasing a client feels awkward, so freelancers wait. The Product Owner checks the problem against the team OKR with the Head of Product.", who: ["Product Owner", "Head of Product"], ai: 0, took: "1 week" },
+     { t: "Same problem, same OKR, same meeting. AI helps tighten the wording of the problem statement.", who: ["Product Owner", "Head of Product"], ai: 1, took: "2 days" },
+     [false, "Deciding whether this problem is worth solving now stays a conversation between people, and the call stays with the Product Owner."]],
+    ["Shaping a solution",
+     { t: "The team likes the reminder idea. The Product Owner writes the spec and user stories. The UX designer draws wireframes. Refinement goes through the spec line by line.", who: ["Product Owner", "UX designer", "Developers"], ai: 0, took: "2 weeks" },
+     { t: "The Product Owner and the UX designer build two clickable versions with AI in one afternoon: A sends reminders, B shows if the invoice was opened.", who: ["Product Owner", "UX designer"], ai: 3, took: "1 afternoon" },
+     [true, "Developers react to something they can click on day two. Refinement moves from \"what does the spec mean\" to \"which version do we test first\"."]],
+    ["Testing with users",
+     { t: "Skipped. Testing two ideas would mean designing and building both, so the team goes with its first idea.", who: [], ai: 0, took: "–" },
+     { t: "Five test sessions with both versions in the same week. Four of five people switch the reminders off again.", who: ["UX designer", "Users"], ai: 1, took: "3 days" },
+     [true, "Users get a say before any code is written. Their reaction reaches the team as something everyone watched, which carries more weight than a summary."]],
+    ["Deciding",
+     { t: "Build the reminders.", who: ["Product Owner"], ai: 0, took: "–" },
+     { t: "Cut the reminders. Build the \"opened\" status, because it moves the leading key result.", who: ["Product Owner"], ai: 0, took: "1 day" },
+     [false, "The Product Owner hears the team and the stakeholders, then makes the call. AI has no part in the decision."]],
+    ["Building",
+     { t: "Three sprints to build escalating reminders, settings and message templates.", who: ["Developers", "Product Owner"], ai: 0, took: "6 weeks" },
+     { t: "One sprint to build the \"opened\" status. An AI assistant writes part of the code. Every change still goes through code review.", who: ["Developers", "Product Owner"], ai: 2, took: "2 weeks" },
+     [false, "Developers still review each other's code and argue about trade-offs. The Product Owner is still in the sprint review."]],
+    ["Learning",
+     { t: "After launch, most freelancers switch the reminders off. The team finds out four weeks after shipping.", who: ["Product Owner", "Support lead"], ai: 0, took: "4 weeks" },
+     { t: "The lesson came in week 3, from the prototype. After launch, the team watches the leading key result: do freelancers act on overdue invoices sooner?", who: ["Product Owner", "Developers"], ai: 1, took: "ongoing" },
+     [true, "The hard conversation about the reminders happens around a prototype in week 3, before any code. Without AI it happened around a shipped feature, after weeks of work."]]
+  ];
+  const aiLabel = ["No AI", "AI: a little", "AI: a fair share", "AI: most of it"];
+  const dots = n => [1, 2, 3].map(i => `<i class="${i <= n ? "on" : ""}"></i>`).join("");
+  const cell = (c, side) => `
+    <div class="cell ${side}"><span class="side">${side === "before" ? "Without AI" : "With AI"}</span>
+      <p>${c.t}</p>
+      <div class="cell-meta">
+        <div class="people">${c.who.map(w => `<span class="chip">${w}</span>`).join("") || '<span class="chip">Nobody</span>'}</div>
+        <span class="ai" title="${aiLabel[c.ai]}">${dots(c.ai)} ${aiLabel[c.ai]}</span>
+        <span class="took">Time: ${c.took}</span>
+      </div>
+    </div>`;
+  document.getElementById("flow").innerHTML = S.map((s, i) => `
+    <li class="stage">
+      <div class="stage-name"><span class="n">${String(i + 1).padStart(2, "0")}</span><h3>${s[0]}</h3></div>
+      <div class="pair">${cell(s[1], "before")}${cell(s[2], "after")}</div>
+      <div class="people-note ${s[3][0] ? "changed" : ""}"><span class="pill">${s[3][0] ? "Between people: changed" : "Between people: unchanged"}</span><p>${s[3][1]}</p></div>
+    </li>`).join("");
+
+  // Timeline (weeks). Learn point: before = end of everything (16), after = after testing (3).
+  const MAX = 16;
+  const rows = [
+    { name: "Without AI", note: "Reminders shipped in week 12. Lesson learned in week 16.", segs: [["other", 0, 6], ["build", 6, 12], ["other", 12, 16]], learn: 16 },
+    { name: "With AI", note: "Lesson learned in week 3. Opened status shipped in week 5.", segs: [["other", 0, 3], ["build", 3, 5]], learn: 3 }
+  ];
+  document.getElementById("flowTime").innerHTML = rows.map(r => `
+    <div class="tl-row"><div class="who"><span>${r.name}</span><span>${r.note}</span></div>
+      <div class="tl-bar">${r.segs.map(([k, a, b]) => `<span class="seg-b ${k}" style="left:${a / MAX * 100}%;width:${(b - a) / MAX * 100}%"></span>`).join("")}
+        <span class="learn-mark" style="left:${Math.min(r.learn / MAX * 100, 99.6)}%"></span></div></div>`).join("");
+})();
+
+/* ---------- Navigation ---------- */
+(function () {
+  const titles = { flow: "Without AI and with AI", terms: "Explainer", invoices: "The story", fourth: "How this site was made" };
+  const seen = new Set();
+  const views = document.querySelectorAll(".view");
+  function go(name, chapter) {
+    if (!document.getElementById("v-" + name)) name = "home";
+    views.forEach(v => v.hidden = v.id !== "v-" + name);
+    const v = document.getElementById("v-" + name);
+    if (v.dataset.story) setChapter(v, chapter || 0);
+    const card = document.getElementById("card-" + name);
+    if (card && !v.dataset.story) card.querySelector(".seen").hidden = false;
+    window.scrollTo(0, 0);
+  }
+  function setChapter(v, n) {
+    const panels = v.querySelectorAll(".chapter"), last = panels.length - 1;
+    panels.forEach((p, i) => p.hidden = i !== n);
+    v.querySelectorAll(".chap").forEach((b, i) => {
+      if (i === n) b.setAttribute("aria-current", "step"); else b.removeAttribute("aria-current");
+      if (i <= n) b.classList.add("visited");
+    });
+    v.dataset.at = n;
+    v.querySelector(".prev").disabled = n === 0;
+    const next = v.querySelector(".next");
+    next.hidden = n === last;
+    const after = v.querySelector(".after");
+    after.hidden = n !== last;
+    if (n === last) {
+      const id = v.dataset.story;
+      seen.add(id);
+      const card = document.getElementById("card-" + id);
+      if (card) card.querySelector(".seen").hidden = false;
+      const links = after.querySelector(".after-links");
+      links.innerHTML = ["flow", "fourth"].filter(k => k !== id)
+        .map(k => `<button type="button" data-view="${k}">${titles[k]}${seen.has(k) ? " ✓" : ""}</button>`).join("");
+    }
+  }
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-view]");
+    if (t) { go(t.dataset.view); return; }
+    const c = e.target.closest(".chap");
+    if (c) { setChapter(c.closest(".view"), +c.dataset.go); c.closest(".view").scrollIntoView({ block: "start" }); return; }
+    const pg = e.target.closest(".pg");
+    if (pg) {
+      const v = pg.closest(".view");
+      setChapter(v, +v.dataset.at + (pg.classList.contains("next") ? 1 : -1));
+      v.scrollIntoView({ block: "start" });
+    }
+  });
+  const h = (location.hash || "").slice(1);
+  if (h) go(h);
+})();
+
+/* ---------- Decision log ---------- */
+(function () {
+  const log = [
+    ["Start from scratch.", "A separate site with its own vision, built without touching or linking to earlier work."],
+    ["Headline: \"Product Ownership is changing\".", "The role is changing, partly because of AI."],
+    ["Every company and user is fictional.", "It's storytelling: prototypes for people who could have been real."],
+    ["Show, don't tell.", "That's my angle as a newcomer. The site itself is made with AI, and the product decisions are mine."],
+    ["English, and anonymous for now.", ""],
+    ["Three stories, three kinds of organisation.", "A medium-sized organisation in sustainable construction, a scaleup, and a large public organisation."],
+    ["Cut the \"sort the PO's week\" quiz.", "It told. The stories show."],
+    ["Keep this log on the page.", ""],
+    ["Build version 1 now.", ""],
+    ["Work the strategy into the stories.", ""],
+    ["Tell each story as short chapters the visitor clicks through.", "The visitor picks which organisation and prototype to dive into, and doesn't see everything at once."],
+    ["Add a short explainer of the concepts used.", ""],
+    ["Retell one story without AI and with AI, side by side.", "Focus on the flow of work, where AI takes on part of the workload, and how the interactions between people change or don't."],
+    ["Call the two versions \"without AI\" and \"with AI\".", ""],
+    ["Cut the construction and public-sector stories.", "Keep only the scaleup story, in two versions: as chapters, and without AI and with AI side by side."],
+    ["Point the explainer at readers from outside IT.", ""],
+    ["Rewrite the subheadline.", "\"Building got cheap\" wasn't quite true. A first version got cheap."],
+    ["Let the subheadline be about testing before committing.", "A first version in an afternoon means you can validate more before you commit."],
+    ["Change the headline to \"Product work is changing\".", ""]
+  ];
+  const el = document.getElementById("log");
+  el.innerHTML = log.map(([d, w]) => `
+    <div class="entry"><span class="d">04.10.2026</span>
+      <div><strong>${d}</strong>${w ? `<span class="why">${w}</span>` : ""}</div></div>`).join("");
+})();
+</script>
+
+</body>
+</html>
